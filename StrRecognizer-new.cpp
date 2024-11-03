@@ -1,4 +1,4 @@
-﻿#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 #include <string>
 #include <fstream>
@@ -14,15 +14,22 @@ int main()
     std::cout << "Будет обработана папка folder рядом с EXE" << std::endl;
     std::cout << "1-инвертирование 2-обесцвечивание 3-контуры" << std::endl;
     std::cout << "4-квадратура обрезкой 5-квадратура достройкой" << std::endl;
-    int flag;
+    int flag, side;
     std::cin >> flag;
+    if (flag == 4 || flag == 5) 
+    {
+        std::cout << "Введите сторону картинки: "; std::cin >> side;
+    }
+
+
 
     std::string pathh = "folder";
     for (const auto& path : fs::directory_iterator(pathh))
-    {
-    cv::Mat image = cv::imread(path, cv::IMREAD_COLOR);
+{
+    cv::Mat image;
+    cv::imread(path.path().string(), cv::IMREAD_COLOR);
     if (flag == 1) { cv::bitwise_not(image, image); }
-    if (flag == 2) { image = cv::imread(path, cv::IMREAD_GRAYSCALE); }
+    if (flag == 2) { image = cv::imread(path.path().string(), cv::IMREAD_GRAYSCALE); }
     //
     if (flag == 3) 
     {
@@ -71,18 +78,21 @@ int main()
         cv::Rect rect;
         cv::Mat mask(image.rows, image.cols, CV_8UC1, (0, 0, 0));
 
-        //
         for (int i = 0; i < contours.size(); i++)
         {
             double area = cv::contourArea(contours[i]);
             if (area > dioptria)
             {rect = cv::boundingRect(contours[i]);}
         }
+        //начало координат находится в верхнем углу
+        rect.y=image.rows
+        if (rect.width<rect.height){rect.width=rect.height}
+        if (rect.width>rect.height){rect.height=rect.width}
         image = image(rect);
-
     }
     if (flag == 5) 
     {                                                                                                                if(image.rows < image.cols)
+        if(image.rows>image.cols)
         {
             cv::Mat row = cv::Mat::ones((image.cols-image.rows)/2, image.cols, CV_8UC1);
             cv::cvtColor(row, row, cv::COLOR_GRAY2BGR);
@@ -93,7 +103,7 @@ int main()
             image = result;
         }
 
-        else//
+        if (image.rows < image.cols)
         {
             cv::Mat col = cv::Mat::ones(image.rows, (image.rows - image.cols) / 2, CV_8UC1);
             if (col.empty() != 1)
@@ -106,24 +116,23 @@ int main()
             image.copyTo(result(cv::Rect(col.cols, 0, image.cols, image.rows)));
             col.copyTo(result(cv::Rect(col.cols + image.cols, 0, col.cols, col.rows)));
             image = result;
+            cv::Mat threshold;  cv::threshold(image, threshold, 1, 255, cv::THRESH_BINARY_INV);
+            cv::inpaint(image, threshold, image, 3, cv::INPAINT_NS); //
             }
         }
     }
 
-        cv::Mat threshold;  cv::threshold(image, threshold, 1, 255, cv::THRESH_BINARY_INV);
 
-        cv::inpaint(image, threshold, image, 3, cv::INPAINT_NS); //
 
         cv::resize(image, image, { side, side }, 0, 0, cv::INTER_LINEAR);
-
+        if (image.empty() != 1) { cv::imwrite(path.path().string(), image); }
         cv::imshow("experiment", image);
         cv::waitKey(0);
         cv::destroyAllWindows();
 
-    }
-    if (image.empty() != 1) { cv::imwrite(path, image); }
-    //
 }
+    
+
 std::cout << "Обработка завершена";
 system("pause");
 return 0;
