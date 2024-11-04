@@ -28,6 +28,7 @@ int main()
 {
     cv::Mat image;
     cv::imread(path.path().string(), cv::IMREAD_COLOR);
+    if (image.empty()) { std::cout << "Изображение повреждено"; continue;}
     if (flag == 1) { cv::bitwise_not(image, image); }
     if (flag == 2) { image = cv::imread(path.path().string(), cv::IMREAD_GRAYSCALE); }
     //
@@ -89,6 +90,7 @@ int main()
         if (rect.width<rect.height){rect.width=rect.height}
         if (rect.width>rect.height){rect.height=rect.width}
         image = image(rect);
+        cv::resize(image, image, { side, side }, 0, 0, cv::INTER_LINEAR);
     }
     if (flag == 5) 
     {                                                                                                                if(image.rows < image.cols)
@@ -118,17 +120,18 @@ int main()
             image = result;
             cv::Mat threshold;  cv::threshold(image, threshold, 1, 255, cv::THRESH_BINARY_INV);
             cv::inpaint(image, threshold, image, 3, cv::INPAINT_NS); //
+            cv::resize(image, image, { side, side }, 0, 0, cv::INTER_LINEAR);
             }
         }
     }
 
 
 
-        cv::resize(image, image, { side, side }, 0, 0, cv::INTER_LINEAR);
+
         if (image.empty() != 1) { cv::imwrite(path.path().string(), image); }
-        cv::imshow("experiment", image);
-        cv::waitKey(0);
-        cv::destroyAllWindows();
+        //cv::imshow("experiment", image);
+        //cv::waitKey(0);
+        //cv::destroyAllWindows();
 
 }
     
