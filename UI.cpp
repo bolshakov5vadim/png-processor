@@ -44,7 +44,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPara
         break;
     }
 
-    return DefWindowProc(hwnd, message, wParam, lParam);
+    return DefWindowProc(hwnd, message, wParam, lParam);//отмена сбора данных с мыши
 }
 
 
