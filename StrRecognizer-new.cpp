@@ -27,7 +27,7 @@ int main()
     for (const auto& path : fs::directory_iterator(pathh))
 {
     cv::Mat image;
-    cv::imread(path.path().string(), cv::IMREAD_COLOR);
+    image = cv::imread(path.path().string(), cv::IMREAD_COLOR);
     if (image.empty()) { std::cout << "Изображение повреждено"; continue;}
     if (flag == 1) { cv::bitwise_not(image, image); }
     if (flag == 2) { image = cv::imread(path.path().string(), cv::IMREAD_GRAYSCALE); }
@@ -51,11 +51,10 @@ int main()
         cv::Mat newimage(image.cols, image.rows, CV_8UC1, (255, 255, 255));
         cv::drawContours(newimage, contours, -1, cv::Scalar(0, 0, 0), 1);
         //
+
+        // здесь была ошибка - приравнение одноканального трехканальному
+        cv::cvtColor(newimage, newimage, cv::COLOR_GRAY2BGR);
         image = newimage;
-        cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
-        //cv::imshow("проверка конт", image);
-        //cv::waitKey(0);
-        //cv::destroyAllWindows();
     }
 
     if (flag == 4) 
@@ -86,9 +85,9 @@ int main()
             {rect = cv::boundingRect(contours[i]);}
         }
         //начало координат находится в верхнем углу
-        rect.y=image.rows
-        if (rect.width<rect.height){rect.width=rect.height}
-        if (rect.width>rect.height){rect.height=rect.width}
+        rect.y = image.rows;
+        if (rect.width < rect.height) { rect.width = rect.height; }
+        if (rect.width > rect.height) { rect.height = rect.width; }
         image = image(rect);
         cv::resize(image, image, { side, side }, 0, 0, cv::INTER_LINEAR);
     }
